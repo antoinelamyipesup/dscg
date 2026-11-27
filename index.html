@@ -795,15 +795,30 @@ const SHEET_URL=""; /* application web Google Apps Script qui alimente la feuill
 const ACCESS_KEY="dscg-acces",REG_KEY="dscg-inscription";
 let ACCESS=null;try{ACCESS=JSON.parse(localStorage.getItem(ACCESS_KEY)||"null")}catch(e){}
 const unlocked=()=>!!ACCESS;
-const FREE_MAX=5; /* chapitres 1 à 5 libres, 6 et plus réservés aux inscrits */
-const chFree=ci=>{const c=COURSE[ci];if(!c)return true;const k=parseInt(c.n,10);return isNaN(k)||k<=FREE_MAX};
+/* Accès libre : avant-propos ou introduction, puis le premier tiers (arrondi) des chapitres de chaque bloc (UE4) ou sous-partie (UE1).
+   Exercices libres : ceux des chapitres libres (UE4), le premier tiers des exercices de chaque sous-partie (UE1). */
+let FREE=new Set(),FREE_EX=new Set(),FREE_U=null;
+function computeFree(){
+  FREE=new Set();FREE_EX=new Set();
+  const groups={},exCh=new Set(EXOS.filter(e=>e.r!=null).map(e=>e.c));
+  COURSE.forEach((c,ci)=>{const k=c.sp||("B"+c.b);(groups[k]=groups[k]||[]).push(ci)});
+  Object.values(groups).forEach(L=>{
+    const num=L.filter(ci=>!exCh.has(ci)&&parseInt(COURSE[ci].n,10)>=1),k=Math.max(1,Math.round(num.length/3));
+    L.forEach(ci=>{const n=parseInt(COURSE[ci].n,10);if(COURSE[ci].n==="0"||(!exCh.has(ci)&&n>=1&&n<=k))FREE.add(ci)});
+  });
+  const exG={};
+  EXOS.forEach((e,i)=>{if(e.r!=null)(exG[e.c]=exG[e.c]||[]).push(i);else if(FREE.has(e.c))FREE_EX.add(i)});
+  Object.values(exG).forEach(L=>{L.slice(0,Math.max(1,Math.round(L.length/3))).forEach(i=>FREE_EX.add(i))});
+  FREE_U=U.id;
+}
+const chFree=ci=>{if(FREE_U!==U.id)computeFree();return !COURSE[ci]||FREE.has(ci)};
 const chLocked=ci=>!unlocked()&&!chFree(ci);
-const exLocked=i=>{if(unlocked())return false;const e=EXOS[i];if(!e)return false;return !chFree(e.c)&&!(e.r!=null&&/\.1$/.test(e.n))};
+const exLocked=i=>{if(unlocked()||!EXOS[i])return false;if(FREE_U!==U.id)computeFree();return !FREE_EX.has(i)};
 const qLocked=i=>{if(unlocked())return false;const q=QB[i];return !chFree(q[6]!=null?q[6]:q[0])};
 const LOCK=(z=16)=>`<svg class="lock" width="${z}" height="${z}" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 10.4V7.7a4.6 4.6 0 0 1 9.2 0v2.7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><rect x="4.2" y="10" width="15.6" height="11.6" rx="3.4" fill="currentColor"/><rect x="4.2" y="10" width="15.6" height="3.2" rx="1.6" fill="#fff" opacity=".18"/><circle cx="12" cy="15.3" r="1.75" fill="#fff"/><rect x="11.15" y="15.6" width="1.7" height="3.4" rx=".85" fill="#fff"/></svg>`;
 function gateBanner(){
   if(unlocked())return "";
-  const t=U.id===1?"Les chapitres 1 à 5 de chaque sous-partie sont en accès libre.":"Les chapitres 1 à 5 de chaque bloc sont en accès libre.";
+  const t=U.id===1?"Le premier tiers de chaque sous-partie est en accès libre.":"Le premier tiers de chaque bloc est en accès libre.";
   return `<div class="gate">${LOCK(24)}<p><b>${t}</b> Inscrivez-vous gratuitement pour débloquer tous les cours, exercices et QCM.</p><button class="btn primary" type="button" data-gate="">Débloquer</button></div>`;
 }
 function renderLockedPage(after,title,meta,back){
