@@ -792,8 +792,7 @@ useUE(ue0);
 
 /* ---------- Accès : chapitre 1 libre, reste réservé aux inscrits ---------- */
 const SHEET_URL=""; /* application web Google Apps Script qui alimente la feuille des inscriptions */
-const APP_URL="https://antoinelamyipesup.github.io/dscg/";     /* adresse officielle de l'application */
-const ACCESS_KEY="dscg-acces";
+const ACCESS_KEY="dscg-acces",REG_KEY="dscg-inscription";
 let ACCESS=null;try{ACCESS=JSON.parse(localStorage.getItem(ACCESS_KEY)||"null")}catch(e){}
 const unlocked=()=>!!ACCESS;
 const chFree=ci=>{const c=COURSE[ci];return !c||c.n==="0"||c.n==="1"};
@@ -813,6 +812,15 @@ function renderLockedPage(after,title,meta,back){
   <p>L’inscription est gratuite et immédiate. Elle débloque l’ensemble des cours, des exercices corrigés et des QCM de l’UE1 et de l’UE4 sur cet appareil.</p>
   <button class="btn primary" type="button" data-gate="${esc(after)}">Débloquer l’accès</button></div>`;
   openGate(after);
+}
+/* l'inscription est gardée sur l'appareil et envoyée dès que possible ; elle n'est jamais bloquante pour l'élève */
+async function sendReg(){
+  let r=null;try{r=JSON.parse(localStorage.getItem(REG_KEY)||"null")}catch(e){}
+  if(!r||r.sent||!SHEET_URL)return;
+  try{
+    await fetch(SHEET_URL,{method:"POST",mode:"no-cors",body:new URLSearchParams({prenom:r.prenom,nom:r.nom,email:r.email,telephone:r.telephone,optin:r.optin,ue:r.ue,page:r.page,website:""})});
+    r.sent=true;try{localStorage.setItem(REG_KEY,JSON.stringify(r))}catch(e){}
+  }catch(e){}
 }
 let gateAfter=null;
 function closeGate(){const m=document.getElementById("gate");if(m)m.hidden=true;document.body.style.overflow="";document.removeEventListener("keydown",gateKey)}
@@ -851,21 +859,15 @@ function openGate(after){
     if(!prenom||!nom||!email||!tel)return err("Merci de renseigner les quatre champs.");
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return err("L’adresse e-mail ne semble pas valide.");
     if(tel.replace(/\D/g,"").length<9)return err("Le numéro de téléphone ne semble pas valide.");
-    if(!SHEET_URL)return err("L’inscription est momentanément indisponible. Merci de réessayer plus tard.");
-    B.disabled=true;B.textContent="Envoi en cours…";
-    const body=new URLSearchParams({prenom,nom,email,telephone:tel,optin:v.optin?"1":"0",ue:U.code,page:gateAfter||cur||"",website:""});
-    try{await fetch(SHEET_URL,{method:"POST",mode:"no-cors",body})}
-    catch(e){
-      B.disabled=false;B.textContent="Débloquer l’accès";
-      let here="";try{here=location.href}catch(x){}
-      if(APP_URL&&here.indexOf(APP_URL)!==0)return err(`L’inscription n’a pas pu être envoyée depuis cette page. Ouvrez l’application à son adresse officielle : <a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL.replace(/^https:\/\//,"")}</a>`,true);
-      return err("L’envoi a échoué. Vérifiez votre connexion et réessayez.");
-    }
-    ACCESS={d:new Date().toISOString(),e:email};try{localStorage.setItem(ACCESS_KEY,JSON.stringify(ACCESS))}catch(e){}
+    const reg={prenom,nom,email,telephone:tel,optin:v.optin?"1":"0",ue:U.code,page:gateAfter||cur||"",date:new Date().toISOString(),sent:false};
+    try{localStorage.setItem(REG_KEY,JSON.stringify(reg))}catch(e){}
+    ACCESS={d:reg.date,e:email};try{localStorage.setItem(ACCESS_KEY,JSON.stringify(ACCESS))}catch(e){}
+    sendReg();
     closeGate();const a=gateAfter;gateAfter=null;
     if(a&&a!=="qcm")go(a);else render(cur);
   };
 }
+sendReg();
 document.addEventListener("click",e=>{const g=e.target.closest("[data-gate]");if(!g)return;e.preventDefault();e.stopPropagation();openGate(g.dataset.gate||null)},true);
 let start="";try{start=location.hash.slice(1)}catch(e){}
 render(start);
