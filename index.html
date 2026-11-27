@@ -633,7 +633,6 @@ let QCH=[...new Set(QB.map(q=>q[0]))];
 const qbOf=i=>COURSE[QB[i][0]].b;
 let qs=null;
 function startQuiz(kind,ch){
-  if((kind==="exam"||kind==="all")&&!unlocked())return openGate("qcm");
   let ids=QB.map((q,i)=>i);
   if(kind==="exam")ids=ids.filter(i=>qbOf(i)===curB);
   if(kind==="all")ids=shuffle(ids).slice(0,30);
@@ -648,8 +647,8 @@ function renderQcmHome(chFocus){
   if(chFocus!=null&&COURSE[chFocus])setB(COURSE[chFocus].b);
   const nerr=Object.keys(S.qerr).length,nb=QB.filter((q,i)=>qbOf(i)===curB).length;
   let h=blocTabs()+`<div><div class="kicker">${U.unit} ${curB} · ${nb} questions · ${QB.length} sur l’${U.code}</div><h1>QCM d’entraînement</h1></div>
-  <div class="qmodes"><button class="qmode main" id="exam"><b>${unlocked()?"":LOCK(15)+" "}Examen blanc ${U.du} ${curB}</b><span>20 questions tirées sur ${U.tout}</span></button>
-  <button class="qmode" id="all"><b>${unlocked()?"":LOCK(15)+" "}Examen blanc ${U.code}</b><span>30 questions sur ${U.trois}</span></button>
+  <div class="qmodes"><button class="qmode main" id="exam"><b>Examen blanc ${U.du} ${curB}</b><span>20 questions tirées sur ${U.tout}</span></button>
+  <button class="qmode" id="all"><b>Examen blanc ${U.code}</b><span>30 questions sur ${U.trois}</span></button>
   <button class="qmode" id="err" ${nerr?"":"disabled"}><b>Revoir mes erreurs</b><span>${nerr?nerr+" question"+(nerr>1?"s":"")+" à retravailler":"Aucune erreur enregistrée"}</span></button></div>
   ${gateBanner()}<h2 style="margin-top:6px">${U.id===1?"Par sous-partie":"Par chapitre"}</h2><div class="qgrid">`;
   QCH.filter(c=>COURSE[c].b===curB).forEach(c=>{
@@ -796,14 +795,15 @@ const SHEET_URL=""; /* application web Google Apps Script qui alimente la feuill
 const ACCESS_KEY="dscg-acces",REG_KEY="dscg-inscription";
 let ACCESS=null;try{ACCESS=JSON.parse(localStorage.getItem(ACCESS_KEY)||"null")}catch(e){}
 const unlocked=()=>!!ACCESS;
-const chFree=ci=>{const c=COURSE[ci];return !c||c.n==="0"||c.n==="1"};
+const FREE_MAX=5; /* chapitres 1 à 5 libres, 6 et plus réservés aux inscrits */
+const chFree=ci=>{const c=COURSE[ci];if(!c)return true;const k=parseInt(c.n,10);return isNaN(k)||k<=FREE_MAX};
 const chLocked=ci=>!unlocked()&&!chFree(ci);
-const exLocked=i=>{if(unlocked())return false;const e=EXOS[i];if(!e)return false;return e.r!=null?!/\.1$/.test(e.n):!chFree(e.c)};
+const exLocked=i=>{if(unlocked())return false;const e=EXOS[i];if(!e)return false;return !chFree(e.c)&&!(e.r!=null&&/\.1$/.test(e.n))};
 const qLocked=i=>{if(unlocked())return false;const q=QB[i];return !chFree(q[6]!=null?q[6]:q[0])};
 const LOCK=(z=16)=>`<svg class="lock" width="${z}" height="${z}" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 10.4V7.7a4.6 4.6 0 0 1 9.2 0v2.7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><rect x="4.2" y="10" width="15.6" height="11.6" rx="3.4" fill="currentColor"/><rect x="4.2" y="10" width="15.6" height="3.2" rx="1.6" fill="#fff" opacity=".18"/><circle cx="12" cy="15.3" r="1.75" fill="#fff"/><rect x="11.15" y="15.6" width="1.7" height="3.4" rx=".85" fill="#fff"/></svg>`;
 function gateBanner(){
   if(unlocked())return "";
-  const t=U.id===1?"L’introduction et le chapitre 1 de chaque sous-partie sont en accès libre.":"L’avant-propos et le chapitre 1 de chaque bloc sont en accès libre.";
+  const t=U.id===1?"Les chapitres 1 à 5 de chaque sous-partie sont en accès libre.":"Les chapitres 1 à 5 de chaque bloc sont en accès libre.";
   return `<div class="gate">${LOCK(24)}<p><b>${t}</b> Inscrivez-vous gratuitement pour débloquer tous les cours, exercices et QCM.</p><button class="btn primary" type="button" data-gate="">Débloquer</button></div>`;
 }
 function renderLockedPage(after,title,meta,back){
