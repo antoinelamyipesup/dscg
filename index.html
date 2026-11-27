@@ -219,6 +219,32 @@ ul.plain li{margin-bottom:6px}
 @media (max-width:460px){h1{font-size:22px}.card .q{font-size:17px}.st{grid-template-columns:38px 1fr}.st-h{grid-column:2;text-align:left}.brandrow .ue{font-size:10.5px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 .uesw{margin-left:auto;display:flex;gap:3px;background:rgba(255,255,255,.12);border-radius:10px;padding:3px}.uesw button{font-family:var(--f-body);border:0;background:transparent;color:#bcd6ec;border-radius:8px;padding:4px 11px 5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.15}.uesw b{font-size:14px;font-weight:800;letter-spacing:.02em}.uesw small{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}.uesw button[aria-pressed="true"]{background:#fff;color:#054370}.uesw button:focus-visible{outline:2px solid #7fc6ea;outline-offset:2px}.gnum.sp{font-size:12.5px;width:38px;height:38px}.qcard .qn.sp{font-size:19px}.grouphead.sph{margin-top:14px}
+.lock{display:inline-block;vertical-align:-2px;flex:none}
+.chapcard.locked .ct{color:var(--muted)}.chapcard.locked .no{color:var(--orange)}
+.lockpill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--orange);background:var(--att-bg);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.gate{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:10px;padding:12px 14px;color:var(--orange)}
+.gate p{margin:0;font-size:14px;flex:1;color:var(--ink)}.gate .btn{flex:none}
+@media(max-width:420px){.gate{flex-wrap:wrap}.gate p{flex-basis:calc(100% - 40px)}.gate .btn{width:100%}}
+.exocard.locked{border-left-color:var(--orange)}.exocard.locked .et{color:var(--muted)}
+.qcard.locked .qt{color:var(--muted)}.qcard.locked .qn{color:var(--orange)}
+.lockpanel{display:flex;flex-direction:column;align-items:flex-start;gap:10px}.lockpanel p{margin:0}
+.lockbig{width:60px;height:60px;border-radius:18px;background:var(--att-bg);color:var(--orange);display:grid;place-items:center;flex:none}
+.modal{position:fixed;inset:0;z-index:60;background:rgba(4,28,48,.64);display:grid;place-items:center;padding:16px;padding-top:max(16px,env(safe-area-inset-top,0px));overflow-y:auto}
+.modal[hidden]{display:none}
+.dlg{position:relative;background:var(--surface);color:var(--ink);border-radius:16px;max-width:440px;width:100%;padding:22px 20px 18px;box-shadow:0 24px 64px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:12px}
+.dlg h2{margin:0;font-size:22px;line-height:1.2}
+.dlg form{display:grid;gap:11px}
+.dlg .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.dlg label{display:grid;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
+.dlg input[type=text],.dlg input[type=email],.dlg input[type=tel]{font:16px var(--f-body);padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);width:100%}
+.dlg input:focus{outline:2px solid var(--cyan);outline-offset:0;border-color:var(--cyan)}
+.dlg .chk{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:13px;color:var(--ink)}
+.dlg .chk input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--brand)}
+.dlg .err{color:var(--ko);font-size:13.5px;font-weight:700;margin:0}.dlg .err a{color:inherit}
+.dlg .legal{font-size:11.5px;color:var(--muted);margin:0;line-height:1.45}.dlg .legal a{color:var(--cyan)}
+.dlg .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.dlg .x{position:absolute;top:10px;right:10px;width:40px;height:40px;border:0;background:transparent;color:var(--muted);font-size:24px;cursor:pointer;border-radius:8px}
+@media(max-width:360px){.dlg .two{grid-template-columns:minmax(0,1fr)}}
 </style>
 
 </head>
@@ -466,16 +492,19 @@ function renderCours(){
   <div class="panel"><div class="stats"><div><b>${L.length}</b><span>chapitres</span></div><div><b>${Math.round(tw/1000)} 000</b><span>mots de cours</span></div><div><b>${tex}</b><span>exercices corrigés</span></div><div><b>${String(Math.round(minutes(tw)/60*10)/10).replace(".",",")}</b><span>heures de lecture</span></div></div>
   <div class="progressline" style="margin-top:14px"><i style="width:${Math.round(done/L.length*100)}%"></i></div>
   <div class="row" style="margin-top:8px"><span class="meta">${done} chapitre${done>1?"s":""} lu${done>1?"s":""} sur ${L.length}</span><span class="spacer"></span><a class="linkbtn" href="#chapitre-${next}">${done?"Reprendre la lecture":"Commencer le cours"}</a></div></div>`;
+  h+=gateBanner();
   let lastSp=null;
   L.forEach(([c,ci])=>{
     if(c.sp&&c.sp!==lastSp){lastSp=c.sp;h+=`<div class="grouphead sph"><span class="gnum sp">${c.sp}</span><h2>${esc(spName(c.sp))}</h2></div>`}
-    h+=`<a class="chapcard" href="#chapitre-${ci}"><span class="no">${c.n==="0"?"·":c.n}</span><span class="ct">${esc(c.t)}</span><span class="cm">${chapLabel(c)} · ${minutes(c.w)} min de lecture${c.ex?` · ${c.ex} exercice${c.ex>1?"s":""}`:""}${S.readc[ci]?` · <b class="lu">✓ lu</b>`:""}</span></a>`;
+    const lk=chLocked(ci);
+    h+=`<a class="chapcard${lk?" locked":""}" href="#chapitre-${ci}"><span class="no">${lk?LOCK(28):c.n==="0"?"·":c.n}</span><span class="ct">${esc(c.t)}</span><span class="cm">${lk?`<span class="lockpill">${LOCK(12)} Réservé aux inscrits</span> `:""}${chapLabel(c)} · ${minutes(c.w)} min de lecture${c.ex?` · ${c.ex} exercice${c.ex>1?"s":""}`:""}${S.readc[ci]?` · <b class="lu">✓ lu</b>`:""}</span></a>`;
   });
   h+=`<a class="promo" href="#prepas"><span class="kicker" style="color:#a9cfeb">Préparer l’${U.code} avec IPESUP</span><b>Prépa annuelle, stage d’été, dernières révisions</b><span>Découvrir les préparations ›</span></a>`;
   view.innerHTML=h;bindTabs(renderCours);
 }
 function renderChapitre(ci,secIndex){
   const c=COURSE[ci];if(!c)return renderCours();
+  if(chLocked(ci))return renderLockedPage("chapitre-"+ci,c.t,chFull(ci),"cours");
   setB(c.b);
   const prev=COURSE[ci-1]&&COURSE[ci-1].b===c.b?COURSE[ci-1]:null,next=COURSE[ci+1]&&COURSE[ci+1].b===c.b?COURSE[ci+1]:null,done=S.readc[ci];
   const toc=c.s.length>1?`<div class="ctoc" role="navigation" aria-label="Dans ce chapitre"><div class="kicker">Dans ce chapitre</div><ol>${c.s.map((s,si)=>`<li><button class="tocbtn" data-sec="${si}">${esc(s.t)}</button></li>`).join("")}</ol></div>`:"";
@@ -543,7 +572,7 @@ function renderProgramme(){
         const r=chs.filter(c=>S.readc[c]).length;
         h+=`<div class="st"><span class="st-code">${code}</span><div class="st-name"><b>${name}</b>
         <div class="bar"><i style="width:${Math.round(r/chs.length*100)}%"></i></div>
-        <div class="row" style="margin-top:6px;gap:12px">${COURSE[chs[0]].sp?`<a class="linkbtn" href="#chapitre-${chs[0]}">Cours</a><a class="linkbtn" href="#chapitre-${chs[chs.length-1]}">Exercices</a>`:chs.map(c=>`<a class="linkbtn" href="#chapitre-${c}">Chap. ${COURSE[c].n}</a>`).join("")}<a class="linkbtn" href="#qcm-${chs[0]}">QCM</a></div></div>
+        <div class="row" style="margin-top:6px;gap:12px">${COURSE[chs[0]].sp?`<a class="linkbtn" href="#chapitre-${chs[0]}">Cours</a><a class="linkbtn" href="#chapitre-${chs[chs.length-1]}">${chLocked(chs[chs.length-1])?LOCK(12)+" ":""}Exercices</a>`:chs.map(c=>`<a class="linkbtn" href="#chapitre-${c}">${chLocked(c)?LOCK(12)+" ":""}Chap. ${COURSE[c].n}</a>`).join("")}<a class="linkbtn" href="#qcm-${chs[0]}">QCM</a></div></div>
         <span class="st-h">${hrs} h · ${r}/${chs.length} lu${r>1?"s":""}</span></div>`;
       }else{
         h+=`<div class="st"><span class="st-code">${code}</span><div class="st-name"><b>${name}</b><div class="meta" style="margin-top:2px">Cours et entraînement à venir</div></div><span class="st-h">${hrs} h</span></div>`;
@@ -569,19 +598,20 @@ function renderExercices(){
   let h=blocTabs()+`<div><div class="kicker">${U.unit} ${curB} · Entraînement</div><h1>Exercices corrigés</h1></div>
   <div class="panel"><div class="stats three"><div><b>${EB.length}</b><span>exercices et cas</span></div><div><b class="g">${ok}</b><span>réussis</span></div><div><b class="o">${rv}</b><span>à revoir</span></div></div>
   <div class="progressline" style="margin-top:14px"><i style="width:${Math.round(ok/EB.length*100)}%;background:var(--green)"></i></div></div>
-  <div class="filters" role="group" aria-label="Filtrer par chapitre"><button class="chip" data-f="0" aria-pressed="${exoFilter===0}">Tous</button>${chs.map(c=>`<button class="chip" data-f="${c}" aria-pressed="${exoFilter===c}">${COURSE[c].sp||"Chap. "+COURSE[c].n}</button>`).join("")}<button class="chip" data-f="rv" aria-pressed="${exoFilter==="rv"}">À revoir</button></div>`;
+  ${gateBanner()}<div class="filters" role="group" aria-label="Filtrer par chapitre"><button class="chip" data-f="0" aria-pressed="${exoFilter===0}">Tous</button>${chs.map(c=>`<button class="chip" data-f="${c}" aria-pressed="${exoFilter===c}">${COURSE[c].sp||"Chap. "+COURSE[c].n}</button>`).join("")}<button class="chip" data-f="rv" aria-pressed="${exoFilter==="rv"}">À revoir</button></div>`;
   chs.filter(c=>exoFilter===0||exoFilter==="rv"||exoFilter===c).forEach(c=>{
     const items=EXOS.map((e,i)=>[e,i]).filter(([e,i])=>e.c===c&&(exoFilter!=="rv"||exoState(i)==="rv"));
     if(!items.length)return;
     h+=`<section><div class="grouphead"><span class="gnum${COURSE[c].sp?" sp":""}">${gNo(c)}</span><h2>${esc(gName(c))}</h2></div><div class="exolist">`+items.map(([e,i])=>{
-      const st=exoState(i),pill=st==="ok"?'<span class="pill ok">Réussi</span>':st==="rv"?'<span class="pill rv">À revoir</span>':'<span class="pill">À faire</span>';
-      return `<a class="exocard" href="#exercice-${i}"><span class="badge">${e.n||"Cas"}</span><span class="et">${esc(e.t)}</span><span class="em">${e.k.length>1?e.k.length+" questions corrigées":"Corrigé détaillé"} ${pill}</span></a>`}).join("")+`</div></section>`;
+      const lk=exLocked(i),st=exoState(i),pill=lk?`<span class="lockpill">${LOCK(12)} Réservé aux inscrits</span>`:st==="ok"?'<span class="pill ok">Réussi</span>':st==="rv"?'<span class="pill rv">À revoir</span>':'<span class="pill">À faire</span>';
+      return `<a class="exocard${lk?" locked":""}" href="#exercice-${i}"><span class="badge">${lk?LOCK(11)+" ":""}${e.n||"Cas"}</span><span class="et">${esc(e.t)}</span><span class="em">${e.k.length>1?e.k.length+" questions corrigées":"Corrigé détaillé"} ${pill}</span></a>`}).join("")+`</div></section>`;
   });
   view.innerHTML=h;bindTabs(()=>{exoFilter=0;renderExercices()});
   view.querySelectorAll("[data-f]").forEach(x=>x.onclick=()=>{const f=x.dataset.f;exoFilter=f==="rv"?"rv":+f;renderExercices()});
 }
 function renderExercice(i){
   const e=EXOS[i];if(!e)return renderExercices();
+  if(exLocked(i))return renderLockedPage("exercice-"+i,e.t,(e.n?"Exercice "+e.n+" · ":"")+gName(e.c),"exercices");
   setB(COURSE[e.c].b);
   const sameB=x=>x&&COURSE[x.c].b===COURSE[e.c].b?x:null;
   const prev=sameB(EXOS[i-1]),next=sameB(EXOS[i+1]),st=exoState(i);
@@ -603,11 +633,13 @@ let QCH=[...new Set(QB.map(q=>q[0]))];
 const qbOf=i=>COURSE[QB[i][0]].b;
 let qs=null;
 function startQuiz(kind,ch){
+  if((kind==="exam"||kind==="all")&&!unlocked())return openGate("qcm");
   let ids=QB.map((q,i)=>i);
   if(kind==="exam")ids=ids.filter(i=>qbOf(i)===curB);
   if(kind==="all")ids=shuffle(ids).slice(0,30);
   if(kind==="ch")ids=ids.filter(i=>QB[i][0]===ch);
   if(kind==="err")ids=ids.filter(i=>S.qerr[i]);
+  ids=ids.filter(i=>!qLocked(i));if(!ids.length)return openGate("qcm");
   ids=shuffle(ids);if(kind==="exam")ids=ids.slice(0,20);
   qs={kind,ch,items:ids.map(i=>({i,order:shuffle([0,1,2,3]),pick:null})),pos:0};
   renderQuiz();
@@ -616,13 +648,13 @@ function renderQcmHome(chFocus){
   if(chFocus!=null&&COURSE[chFocus])setB(COURSE[chFocus].b);
   const nerr=Object.keys(S.qerr).length,nb=QB.filter((q,i)=>qbOf(i)===curB).length;
   let h=blocTabs()+`<div><div class="kicker">${U.unit} ${curB} · ${nb} questions · ${QB.length} sur l’${U.code}</div><h1>QCM d’entraînement</h1></div>
-  <div class="qmodes"><button class="qmode main" id="exam"><b>Examen blanc ${U.du} ${curB}</b><span>20 questions tirées sur ${U.tout}</span></button>
-  <button class="qmode" id="all"><b>Examen blanc ${U.code}</b><span>30 questions sur ${U.trois}</span></button>
+  <div class="qmodes"><button class="qmode main" id="exam"><b>${unlocked()?"":LOCK(15)+" "}Examen blanc ${U.du} ${curB}</b><span>20 questions tirées sur ${U.tout}</span></button>
+  <button class="qmode" id="all"><b>${unlocked()?"":LOCK(15)+" "}Examen blanc ${U.code}</b><span>30 questions sur ${U.trois}</span></button>
   <button class="qmode" id="err" ${nerr?"":"disabled"}><b>Revoir mes erreurs</b><span>${nerr?nerr+" question"+(nerr>1?"s":"")+" à retravailler":"Aucune erreur enregistrée"}</span></button></div>
-  <h2 style="margin-top:6px">${U.id===1?"Par sous-partie":"Par chapitre"}</h2><div class="qgrid">`;
+  ${gateBanner()}<h2 style="margin-top:6px">${U.id===1?"Par sous-partie":"Par chapitre"}</h2><div class="qgrid">`;
   QCH.filter(c=>COURSE[c].b===curB).forEach(c=>{
-    const n=QB.filter(q=>q[0]===c).length,best=S.qb[c];
-    h+=`<button class="qcard${chFocus===c?" focus":""}" data-ch="${c}"><span class="qn${COURSE[c].sp?" sp":""}">${gNo(c)}</span><span class="qt">${esc(gName(c))}</span><span class="qm">${n} questions${best!=null?` · meilleur score ${best} %`:""}</span><span class="bar"><i style="width:${best||0}%"></i></span></button>`;
+    const ids=QB.map((q,i)=>i).filter(i=>QB[i][0]===c),n=ids.length,nf=ids.filter(i=>!qLocked(i)).length,lk=nf===0,best=S.qb[c];
+    h+=`<button class="qcard${chFocus===c?" focus":""}${lk?" locked":""}" data-ch="${c}"><span class="qn${COURSE[c].sp?" sp":""}">${lk?LOCK(24):gNo(c)}</span><span class="qt">${esc(gName(c))}</span><span class="qm">${lk?`<span class="lockpill">${LOCK(12)} Réservé aux inscrits</span> ${n} questions`:nf<n?`${nf} question${nf>1?"s":""} en accès libre sur ${n}`:`${n} questions`}${best!=null?` · meilleur score ${best} %`:""}</span><span class="bar"><i style="width:${best||0}%"></i></span></button>`;
   });
   view.innerHTML=h+"</div>";
   bindTabs(()=>renderQcmHome());
@@ -661,7 +693,7 @@ function renderQuizEnd(){
   <p style="margin:0">${pct>=80?"Excellent niveau : vous maîtrisez ces notions.":pct>=60?"Bon niveau : reprenez les questions manquées ci-dessous.":pct>=40?"Les bases sont là, mais plusieurs notions sont à consolider : relisez les sections indiquées.":"À retravailler : commencez par relire le cours avant de recommencer."}</p>
   ${byCh}
   <div class="row"><button class="btn primary" id="again">Recommencer</button><button class="btn" id="home">Autres QCM</button></div></div>
-  ${misses.length?`<h2>Questions à revoir</h2>`+misses.map(x=>{const [c,t,o,a,e,r]=QB[x.i],lc=QB[x.i][6]!=null?QB[x.i][6]:c;return `<div class="panel miss"><div class="meta">${qTitle(c)}</div><div class="qtext" style="font-size:16px;margin:4px 0 8px">${esc(t)}</div><div class="exp"><b>Réponse : ${esc(o[a])}.</b> ${esc(e)} <a class="linkbtn" href="#${secLink(lc,r)}">Cours : ${COURSE[lc].sp?COURSE[lc].sp+(r?" § "+r:""):r}</a></div></div>`}).join(""):""}`;
+  ${gateBanner()}${misses.length?`<h2>Questions à revoir</h2>`+misses.map(x=>{const [c,t,o,a,e,r]=QB[x.i],lc=QB[x.i][6]!=null?QB[x.i][6]:c;return `<div class="panel miss"><div class="meta">${qTitle(c)}</div><div class="qtext" style="font-size:16px;margin:4px 0 8px">${esc(t)}</div><div class="exp"><b>Réponse : ${esc(o[a])}.</b> ${esc(e)} <a class="linkbtn" href="#${secLink(lc,r)}">Cours : ${COURSE[lc].sp?COURSE[lc].sp+(r?" § "+r:""):r}</a></div></div>`}).join(""):""}`;
   document.getElementById("again").onclick=()=>startQuiz(qs.kind,qs.ch);
   document.getElementById("home").onclick=()=>{qs=null;renderQcmHome()};
 }
@@ -757,6 +789,84 @@ document.querySelectorAll("[data-ue]").forEach(b=>b.onclick=()=>{
 let ue0=0;try{ue0=+localStorage.getItem("dscg-ue")}catch(e){}
 if(ue0!==1&&ue0!==4){let has4=false;try{has4=!!localStorage.getItem("ue4-revisions-v1")}catch(e){}ue0=has4?4:1}
 useUE(ue0);
+
+/* ---------- Accès : chapitre 1 libre, reste réservé aux inscrits ---------- */
+const SHEET_URL=""; /* application web Google Apps Script qui alimente la feuille des inscriptions */
+const APP_URL="https://antoinelamyipesup.github.io/dscg/";     /* adresse officielle de l'application */
+const ACCESS_KEY="dscg-acces";
+let ACCESS=null;try{ACCESS=JSON.parse(localStorage.getItem(ACCESS_KEY)||"null")}catch(e){}
+const unlocked=()=>!!ACCESS;
+const chFree=ci=>{const c=COURSE[ci];return !c||c.n==="0"||c.n==="1"};
+const chLocked=ci=>!unlocked()&&!chFree(ci);
+const exLocked=i=>{if(unlocked())return false;const e=EXOS[i];if(!e)return false;return e.r!=null?!/\.1$/.test(e.n):!chFree(e.c)};
+const qLocked=i=>{if(unlocked())return false;const q=QB[i];return !chFree(q[6]!=null?q[6]:q[0])};
+const LOCK=(z=16)=>`<svg class="lock" width="${z}" height="${z}" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 10.4V7.7a4.6 4.6 0 0 1 9.2 0v2.7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><rect x="4.2" y="10" width="15.6" height="11.6" rx="3.4" fill="currentColor"/><rect x="4.2" y="10" width="15.6" height="3.2" rx="1.6" fill="#fff" opacity=".18"/><circle cx="12" cy="15.3" r="1.75" fill="#fff"/><rect x="11.15" y="15.6" width="1.7" height="3.4" rx=".85" fill="#fff"/></svg>`;
+function gateBanner(){
+  if(unlocked())return "";
+  const t=U.id===1?"L’introduction et le chapitre 1 de chaque sous-partie sont en accès libre.":"L’avant-propos et le chapitre 1 de chaque bloc sont en accès libre.";
+  return `<div class="gate">${LOCK(24)}<p><b>${t}</b> Inscrivez-vous gratuitement pour débloquer tous les cours, exercices et QCM.</p><button class="btn primary" type="button" data-gate="">Débloquer</button></div>`;
+}
+function renderLockedPage(after,title,meta,back){
+  view.innerHTML=`<div class="crumbs"><a href="#${back}">${back==="exercices"?"Exercices":"Cours"}</a> › ${esc(meta)}</div>
+  <div><div class="kicker">${esc(meta)}</div><h1>${esc(title)}</h1></div>
+  <div class="panel lockpanel"><div class="lockbig">${LOCK(34)}</div><b style="font-size:17px">Contenu réservé aux inscrits</b>
+  <p>L’inscription est gratuite et immédiate. Elle débloque l’ensemble des cours, des exercices corrigés et des QCM de l’UE1 et de l’UE4 sur cet appareil.</p>
+  <button class="btn primary" type="button" data-gate="${esc(after)}">Débloquer l’accès</button></div>`;
+  openGate(after);
+}
+let gateAfter=null;
+function closeGate(){const m=document.getElementById("gate");if(m)m.hidden=true;document.body.style.overflow="";document.removeEventListener("keydown",gateKey)}
+function gateKey(e){if(e.key==="Escape")closeGate()}
+function openGate(after){
+  if(unlocked()){if(after)go(after);return}
+  gateAfter=after||null;
+  let m=document.getElementById("gate");
+  if(!m){m=document.createElement("div");m.id="gate";m.className="modal";document.body.appendChild(m)}
+  m.innerHTML=`<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="gate-t">
+  <button class="x" type="button" id="gate-x" aria-label="Fermer">×</button>
+  <div class="lockbig">${LOCK(32)}</div>
+  <h2 id="gate-t">Débloquez toute l’application</h2>
+  <p style="margin:0">Inscription gratuite : accédez à l’ensemble des cours, des exercices corrigés et des QCM de l’UE1 et de l’UE4.</p>
+  <form id="gate-f" novalidate>
+   <div class="two"><label>Prénom<input type="text" name="prenom" autocomplete="given-name" required></label><label>Nom<input type="text" name="nom" autocomplete="family-name" required></label></div>
+   <label>E-mail<input type="email" name="email" autocomplete="email" inputmode="email" required></label>
+   <label>Téléphone<input type="tel" name="telephone" autocomplete="tel" inputmode="tel" required></label>
+   <label class="chk"><input type="checkbox" name="optin" value="1"><span>J’accepte de recevoir des informations d’IPESUP sur ses préparations au DSCG.</span></label>
+   <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+   <p class="err" id="gate-e" role="alert" hidden></p>
+   <button class="btn primary" type="submit" id="gate-s">Débloquer l’accès</button>
+  </form>
+  <p class="legal">Vos coordonnées sont utilisées par IPESUP pour gérer votre accès et, si vous l’acceptez, pour vous informer sur ses préparations. Vous pouvez demander leur suppression à tout moment par le <a href="${LINKS.contact}" target="_blank" rel="noopener">formulaire de contact</a>.</p>
+ </div>`;
+  m.hidden=false;document.body.style.overflow="hidden";document.addEventListener("keydown",gateKey);
+  m.onclick=e=>{if(e.target===m)closeGate()};
+  document.getElementById("gate-x").onclick=closeGate;
+  const f=document.getElementById("gate-f"),E=document.getElementById("gate-e"),B=document.getElementById("gate-s");
+  setTimeout(()=>{try{f.querySelector("input").focus()}catch(e){}},50);
+  f.onsubmit=async ev=>{
+    ev.preventDefault();E.hidden=true;
+    const v=Object.fromEntries(new FormData(f).entries()),err=(t,html)=>{if(html)E.innerHTML=t;else E.textContent=t;E.hidden=false};
+    if(v.website)return;
+    const prenom=(v.prenom||"").trim(),nom=(v.nom||"").trim(),email=(v.email||"").trim(),tel=(v.telephone||"").trim();
+    if(!prenom||!nom||!email||!tel)return err("Merci de renseigner les quatre champs.");
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return err("L’adresse e-mail ne semble pas valide.");
+    if(tel.replace(/\D/g,"").length<9)return err("Le numéro de téléphone ne semble pas valide.");
+    if(!SHEET_URL)return err("L’inscription est momentanément indisponible. Merci de réessayer plus tard.");
+    B.disabled=true;B.textContent="Envoi en cours…";
+    const body=new URLSearchParams({prenom,nom,email,telephone:tel,optin:v.optin?"1":"0",ue:U.code,page:gateAfter||cur||"",website:""});
+    try{await fetch(SHEET_URL,{method:"POST",mode:"no-cors",body})}
+    catch(e){
+      B.disabled=false;B.textContent="Débloquer l’accès";
+      let here="";try{here=location.href}catch(x){}
+      if(APP_URL&&here.indexOf(APP_URL)!==0)return err(`L’inscription n’a pas pu être envoyée depuis cette page. Ouvrez l’application à son adresse officielle : <a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL.replace(/^https:\/\//,"")}</a>`,true);
+      return err("L’envoi a échoué. Vérifiez votre connexion et réessayez.");
+    }
+    ACCESS={d:new Date().toISOString(),e:email};try{localStorage.setItem(ACCESS_KEY,JSON.stringify(ACCESS))}catch(e){}
+    closeGate();const a=gateAfter;gateAfter=null;
+    if(a&&a!=="qcm")go(a);else render(cur);
+  };
+}
+document.addEventListener("click",e=>{const g=e.target.closest("[data-gate]");if(!g)return;e.preventDefault();e.stopPropagation();openGate(g.dataset.gate||null)},true);
 let start="";try{start=location.hash.slice(1)}catch(e){}
 render(start);
 /* polices de la charte, chargées sans bloquer l'affichage */
