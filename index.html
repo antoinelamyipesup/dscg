@@ -726,7 +726,7 @@ function renderPer(fresh){
 const ROUTES={programme:renderProgramme,cours:renderCours,exercices:renderExercices,qcm:renderQcm,perimetre:renderPer,prepas:renderPrepas};
 let cur=null;
 function render(r){
-  r=(r||"programme").replace(/^#/,"");if(/^ue[14]$/.test(r)){useUE(+r[2]);r="programme"}cur=r;
+  r=(r||"programme").replace(/^#/,"");if(/^ue[14]$/.test(r)){useUE(+r[2]);r="programme"}if(r==="reset-acces"){resetAccess();r="programme";try{history.replaceState(null,"","#programme")}catch(e){}}cur=r;
   let tab=r,m;
   if((m=r.match(/^chapitre-(\d+)$/))){tab="cours";renderChapitre(+m[1])}
   else if((m=r.match(/^lecture-(\d+)-(\d+)$/))){tab="cours";renderChapitre(+m[1],+m[2])}
@@ -735,6 +735,7 @@ function render(r){
   else{if(!ROUTES[r])tab="programme";ROUTES[tab]()}
   document.querySelectorAll("#nav a").forEach(a=>{if(a.getAttribute("href")==="#"+tab)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")});
   if(!/^lecture-/.test(r))top0();
+  if(justReset){justReset=false;view.insertAdjacentHTML("afterbegin",`<div class="gate" role="status">${LOCK(22)}<p><b>Accès réinitialisé sur cet appareil.</b> Les contenus sont de nouveau verrouillés et le formulaire d’inscription s’affichera.</p></div>`)}
 }
 function go(r){
   r=String(r).replace(/^#/,"");
@@ -822,6 +823,8 @@ async function sendReg(){
     r.sent=true;try{localStorage.setItem(REG_KEY,JSON.stringify(r))}catch(e){}
   }catch(e){}
 }
+let justReset=false;
+function resetAccess(){ACCESS=null;try{localStorage.removeItem(ACCESS_KEY);localStorage.removeItem(REG_KEY)}catch(e){}justReset=true}
 let gateAfter=null;
 function closeGate(){const m=document.getElementById("gate");if(m)m.hidden=true;document.body.style.overflow="";document.removeEventListener("keydown",gateKey)}
 function gateKey(e){if(e.key==="Escape")closeGate()}
